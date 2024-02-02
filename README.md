@@ -134,7 +134,7 @@ python main.py --n_households 100 --house_alg "aie" --gov_alg "aie" --task "gdp"
 (5) AI Economist-BC: For fairness in comparison, we evaluated the AI Economist method with behavior cloning as pre-training to determine its effectiveness.
 
 ```bash
-python main.py --n_households 100 --house_alg "aie" --gov_alg "aie" --task "gdp" --seed 112 --hidden_size 128 --q_lr 3e-4 --p_lr 3e-4 --batch_size 128 
+python main.py --n_households 100 --house_alg "aie_bc" --gov_alg "aie" --task "gdp" --seed 112 --hidden_size 128 --q_lr 3e-4 --p_lr 3e-4 --batch_size 128 
 ```
 
 
