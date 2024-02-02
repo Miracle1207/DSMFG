@@ -1,31 +1,13 @@
-# TaxAI: A Dynamic Economic Simulator and Benchmark for Multi-Agent Reinforcement Learning
+# Optimizing Macroeconomic Policies based on Microfoundations: A Stackelberg Mean Field Game Approach
 
 <div style="text-align:center">
-  <img src="./img/new_model_dynamics.png" alt="示例图片" >
+  <img src="./img/smfg.png" alt="示例图片" >
   <figcaption style="text-align:center;"></figcaption>
 </div>
 
+Effective macroeconomic policies play a crucial role in promoting economic growth and social stability. This paper models the optimal macroeconomic policy problem based on the \textit{Stackelberg Mean Field Game} (SMFG), where the government acts as the leader in policy-making, and large-scale households dynamically respond as followers. This modeling method captures the asymmetric dynamic game between the government and large-scale households, and interpretably evaluates the effects of macroeconomic policies based on microfoundations, which is difficult for existing methods to achieve. We also propose a solution for SMFGs, incorporating pre-training on real data and a model-free \textit{Stackelberg mean-field reinforcement learning }(SMFRL) algorithm, which operates independently of prior environmental knowledge and transitions. Our experimental results showcase the superiority of the SMFG method over other economic policies in terms of performance, efficiency-equity tradeoff, and SMFG assumption analysis. This paper significantly contributes to the domain of AI for economics by providing a powerful tool for modeling and solving optimal macroeconomic policies.
 
-
-The optimization of fiscal policies by governments to stimulate economic growth, ensure social equity and stability, and maximize social welfare has been a subject of significant interest. Simultaneously, individuals keenly observe government policies to optimize their own production and saving strategies. 
-
-To simulate this problem, we propose a multi-agent reinforcement learning simulator based on the Bewley-Aiyagari model. Our simulator encompasses various economic activities of governments, households, technology, and financial intermediaries. By integrating reinforcement learning algorithms, it enables the derivation of optimal strategies for governments and individuals while facilitating the study of the relationship between government policies, micro-level household behaviors, and macroeconomic phenomena.
-
-### A comparison of MARL simulators for optimal taxation problems
-
-| Simulator             | AI Economist | RBC Model | **TaxAI** (ours)              |
-| --------------------- | ------------ | --------- | ----------------------------- |
-| Households' Number    | 10           | 100       | 10000                         |
-| Tax Schedule          | Non-linear   | Linear    | Non-linear                    |
-| Tax Type              | Income       | Income    | Income & Wealth & Consumption |
-| Social Roles' Types   | 2            | 3         | 4                             |
-| Saving Strategy       | &#x2716;     | &#x2714;  | &#x2714;                      |
-| Heterogenous Agent    | &#x2714;     | &#x2714;  | &#x2714;                      |
-| Real-data Calibration | &#x2716;     | &#x2716;  | &#x2714;                      |
-| Open source           | &#x2714;     | &#x2716;  | &#x2714;                      |
-| MARL Benchmark        | &#x2716;     | &#x2716;  | &#x2714;                      |
-
-
+The **code** can be applied to various government policies and households' policies within the [TaxAI](https://github.com/jidiai/TaxAI) environment.
 
 ## Install
 
@@ -52,7 +34,7 @@ cd SMFG
 pip install -r requirements.txt
 ```
 
-## ALgorithms for solving SMFGs
+## 1. ALgorithms for solving SMFGs
 
 The details of the algorithms used by the leader and follower agents in the baselines for solving SMFG.
 
@@ -121,7 +103,9 @@ python main.py --n_households 100 --house_alg "bi_mfrl" --gov_alg "bi_ddpg" --ta
 
 
 
-## Economic policies
+## 2. Implements of Economic policies
+
+### Train agents
 
 (1) Free Market: A market without policy intervention.
 
