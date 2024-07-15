@@ -18,7 +18,7 @@ You can use any tool to manage your python environment. Here, we use conda as an
 2. Build a Python virtual environment.
 
 ```bash
-conda create -n smfg python=3.6
+conda create -n smfg python=3.8
 ```
 
 3. Activate the virtual environment
