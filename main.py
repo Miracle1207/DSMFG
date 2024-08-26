@@ -15,10 +15,13 @@ import argparse
 from omegaconf import OmegaConf
 from runner import Runner
 
+
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", type=str, default='default')
     parser.add_argument("--wandb", action='store_true')
+    parser.add_argument("--test", action='store_false')
+    parser.add_argument("--br", action='store_true')
     parser.add_argument("--house_alg", type=str, default='mfac', help="rule_based, ippo, mfac, real")
     parser.add_argument("--gov_alg", type=str, default='ac', help="ac, rule_based, independent")
     parser.add_argument("--task", type=str, default='gdp', help="gini, social_welfare, gdp_gini")
@@ -32,10 +35,9 @@ def parse_args():
     parser.add_argument('--update_cycles', type=int, default=100, help='[10，100，1000]')
     parser.add_argument('--update_freq', type=int, default=10, help='[10，20，30]')
     parser.add_argument('--initial_train', type=int, default=10, help='[10，100，200]')
-
-
     args = parser.parse_args()
     return args
+
 
 def select_agent(alg, agent_name):
     if agent_name == "households":
@@ -54,10 +56,6 @@ def select_agent(alg, agent_name):
         elif alg == "rule_based":
             house_agent = rule_agent(env, yaml_cfg.Trainer)
         elif alg == "aie":
-            yaml_cfg.Trainer["bc"] = False
-            house_agent = aie_agent(env, yaml_cfg.Trainer)
-        elif alg == "aie_bc":
-            yaml_cfg.Trainer["bc"] = True
             house_agent = aie_agent(env, yaml_cfg.Trainer)
         else:
             print("Wrong Choice!")
@@ -84,7 +82,7 @@ if __name__ == '__main__':
     # set signle thread
     os.environ['OMP_NUM_THREADS'] = '1'
     os.environ['MKL_NUM_THREADS'] = '1'
-
+    
     args = parse_args()
     path = args.config
     yaml_cfg = OmegaConf.load(f'./cfg/{path}.yaml')
@@ -93,6 +91,7 @@ if __name__ == '__main__':
     yaml_cfg.Environment.env_core["env_args"].gov_task = args.task
     yaml_cfg.Trainer["seed"] = args.seed
     yaml_cfg.Trainer["wandb"] = args.wandb
+    yaml_cfg.Trainer["find_best_response"] = args.br
     
     '''tuning'''
     # tuning(yaml_cfg)
@@ -102,6 +101,7 @@ if __name__ == '__main__':
     yaml_cfg.Trainer["batch_size"] = args.batch_size
     yaml_cfg.Trainer["house_alg"] = args.house_alg
     yaml_cfg.Trainer["gov_alg"] = args.gov_alg
+    
     if args.gov_alg == "saez" or args.gov_alg == "us_federal":
         yaml_cfg.Environment['env_core']['env_args']['tax_moudle'] = args.gov_alg
     set_seeds(args.seed, cuda=yaml_cfg.Trainer["cuda"])
@@ -112,16 +112,17 @@ if __name__ == '__main__':
     gov_agent = select_agent(args.gov_alg, agent_name="government")
     
     print("n_households: ", yaml_cfg.Trainer["n_households"])
-
-    TEST = False
+    
+    TEST = args.test
     if TEST == True:
         heter_house_agent = select_agent(yaml_cfg.Trainer["heter_house_alg"], agent_name="households")
-        runner = Runner(env, yaml_cfg.Trainer, house_agent=house_agent, government_agent=gov_agent, heter_house=heter_house_agent)
+        runner = Runner(env, yaml_cfg.Trainer, house_agent=house_agent, government_agent=gov_agent,
+                        heter_house=heter_house_agent)
         runner.test()
     else:
         runner = Runner(env, yaml_cfg.Trainer, house_agent=house_agent, government_agent=gov_agent)
         runner.run()
-        
+
 
 
 

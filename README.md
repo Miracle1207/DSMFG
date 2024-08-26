@@ -1,7 +1,11 @@
-# Optimizing Macroeconomic Policies based on Microfoundations: A Stackelberg Mean Field Game Approach
+# Learning Macroeconomic Policies based on Microfoundations: A Dynamic Stackelberg Mean Field Game Approach
 
 <div style="text-align:center">
-  <img src="./img/smfg.png" alt="示例图片" >
+<<<<<<< HEAD
+  <img src="img/smfg.png" alt="示例图片" >
+=======
+  <img src="https://anonymous.4open.science/api/repo/SMFG_macro_7740/file/img/smfg.png?v=5ad7dba5" alt="示例图片" >
+>>>>>>> b23b21d4c93de996f09712e5c4807a6200e2efcf
   <figcaption style="text-align:center;"></figcaption>
 </div>
 
@@ -18,7 +22,7 @@ You can use any tool to manage your python environment. Here, we use conda as an
 2. Build a Python virtual environment.
 
 ```bash
-conda create -n smfg python=3.6
+conda create -n smfg python=3.8
 ```
 
 3. Activate the virtual environment
@@ -27,116 +31,90 @@ conda create -n smfg python=3.6
 conda activate smfg
 ```
 
-4. Clone the repository and install the required dependencies
+4. Install [Pytorch](https://pytorch.org/).
+
+5. Clone the repository and install the required dependencies
 
 ```bash 
 cd SMFG
 pip install -r requirements.txt
 ```
-
-## 1. ALgorithms for solving SMFGs
-
-The details of the algorithms used by the leader and follower agents in the baselines for solving SMFG.
-
-| Baselines  | Follower's Algorithm    | Leader's Algorithm     |
-| ---------- | ----------------------- | ---------------------- |
-| Rule-based | Random/Behavior cloning | Rule-based/Free market |
-| DDPG       | Random/Behavior cloning | DDPG                   |
-| MADDPG     | MADDPG                  | MADDPG                 |
-| IDDPG      | IDDPG                   | IDDPG                  |
-| MF-MARL    | Mean Field MARL         | DDPG                   |
-| SMFRL      | SMFRL                   | SMFRL                  |
-
-### Train agents
-
-1. Rule-based
-
-when households' policy is behavior cloning on real data:
-
-```bash
-python main.py --n_households 100 --house_alg "real" --gov_alg "rule_based" --task "gdp" --seed 8 --hidden_size 128 --q_lr 3e-4 --p_lr 3e-4 --batch_size 128 
+6. Install mpi4py
+```bash 
+conda install mpi4py
 ```
 
-when households' policy is random policy:
+## Train agents
+
+### SMFG method
 
 ```bash
-python main.py --n_households 100 --house_alg "rule_based" --gov_alg "rule_based" --task "gdp" --seed 8 --hidden_size 128 --q_lr 3e-4 --p_lr 3e-4 --batch_size 128 
+python main.py --n_households 100 --house_alg "bi_mfrl" --gov_alg "bi_ddpg" --task "gdp" --seed 1 --hidden_size 128 --q_lr 3e-4 --p_lr 3e-4 --batch_size 128 
+```
+**Useful Arguments:**
+
+- `--n_households`: Specifies the number of households. Options include 10, 100, 1000, or 10000.
+- `--wandb`: Enables the use of *Weights & Biases* for logging data. You must create and set up your account to use this feature.
+- `--bc`: Use behavior cloning for pre-training initialization.
+- `--br`: Calculate and print the exploitability. This can slow down training and is generally used during testing.
+- `--test`: Add this option if you wish to run tests.
+
+These options help you configure and understand the performance of the system under different conditions.
+
+
+### Ablation studies
+1. SMFG-S
+```bash
+python main.py --n_households 100 --house_alg "mfrl" --gov_alg "ddpg" --task "gdp" --seed 8 --hidden_size 128 --q_lr 3e-4 --p_lr 3e-4 --batch_size 128 
 ```
 
-2. DDPG
+2. SMFG-MF
+```bash
+python main.py --n_households 100 --house_alg "maddpg" --gov_alg "maddpg" --task "gdp" --seed 112 --hidden_size 128 --q_lr 3e-4 --p_lr 3e-4 --batch_size 128 
+```
 
-when households' policy is behavior cloning on real data:
+3. SMFG-S-MF
+```bash
+python main.py --n_households 100 --house_alg "ddpg" --gov_alg "ddpg" --task "gdp" --seed 8 --hidden_size 128 --q_lr 3e-4 --p_lr 3e-4 --batch_size 128 
+```
+
+4. Others
 
 ```bash
 python main.py --n_households 100 --house_alg "real" --gov_alg "ddpg" --task "gdp" --seed 8 --hidden_size 128 --q_lr 3e-4 --p_lr 3e-4 --batch_size 128 
 ```
 
-when households' policy is random policy:
+### Economic policies
 
-```bash
-python main.py --n_households 100 --house_alg "rule_based" --gov_alg "ddpg" --task "gdp" --seed 8 --hidden_size 128 --q_lr 3e-4 --p_lr 3e-4 --batch_size 128 
-```
-
-3. MADDPG
-
-```bash
-python main.py --n_households 100 --house_alg "maddpg" --gov_alg "maddpg" --task "gdp" --seed 112 --hidden_size 128 --q_lr 3e-4 --p_lr 3e-4 --batch_size 128 
-```
-
-4. IDDPG
-
-```bash
-python main.py --n_households 100 --house_alg "ddpg" --gov_alg "ddpg" --task "gdp" --seed 8 --hidden_size 128 --q_lr 3e-4 --p_lr 3e-4 --batch_size 128 
-```
-
-5. MF-MARL
-
-```bash
-python main.py --n_households 100 --house_alg "mfrl" --gov_alg "ddpg" --task "gdp" --seed 8 --hidden_size 128 --q_lr 3e-4 --p_lr 3e-4 --batch_size 128 
-```
-
-6. SMFRL (our method)
-
-```bash
-python main.py --n_households 100 --house_alg "bi_mfrl" --gov_alg "bi_ddpg" --task "gdp" --seed 8 --hidden_size 128 --q_lr 3e-4 --p_lr 3e-4 --batch_size 128 
-```
-
-
-
-## 2. Implements of Economic policies
-
-### Train agents
-
-(1) Free Market: A market without policy intervention.
+1. Free Market: A market without policy intervention.
 
 ```bash
 python main.py --n_households 100 --house_alg "real" --gov_alg "rule_based" --task "gdp" --seed 112 --hidden_size 128 --q_lr 3e-4 --p_lr 3e-4 --batch_size 128 
 ```
 
-(2) Saez Tax: The Saex tax policy is often considered a suggestion for specific tax reforms in the real world.
+2. Saez Tax: The Saex tax policy is often considered a suggestion for specific tax reforms in the real world.
 
 ```bash
 python main.py --n_households 100 --house_alg "real" --gov_alg "saez" --task "gdp" --seed 112 --hidden_size 128 --q_lr 3e-4 --p_lr 3e-4 --batch_size 128 
 ```
 
-(3) U.S. Federal Tax: Real data from OECD in 2022 for this policy.
+3. U.S. Federal Tax: Real data from OECD in 2022 for this policy.
 
 ```bash
 python main.py --n_households 100 --house_alg "real" --gov_alg "us_federal" --task "gdp" --seed 112 --hidden_size 128 --q_lr 3e-4 --p_lr 3e-4 --batch_size 128
 ```
 
-(4) AI Economist: This is a two-level MARL method based on Proximal Policy Optimization (PPO). In the first phase, households' policies are trained from scratch in a free-market (no-tax) environment. In the second phase, households continue to learn under an RL social planner.
+4. AI Economist: This is a two-level MARL method based on Proximal Policy Optimization (PPO). In the first phase, households' policies are trained from scratch in a free-market (no-tax) environment. In the second phase, households continue to learn under an RL social planner.
 
 ```bash
 python main.py --n_households 100 --house_alg "aie" --gov_alg "aie" --task "gdp" --seed 112 --hidden_size 128 --q_lr 3e-4 --p_lr 3e-4 --batch_size 128 
 ```
 
-(5) AI Economist-BC: For fairness in comparison, we evaluated the AI Economist method with behavior cloning as pre-training to determine its effectiveness.
+5. AI Economist-BC: For fairness in comparison, we evaluated the AI Economist method with behavior cloning as pre-training to determine its effectiveness.
 
 ```bash
 python main.py --n_households 100 --house_alg "aie_bc" --gov_alg "aie" --task "gdp" --seed 112 --hidden_size 128 --q_lr 3e-4 --p_lr 3e-4 --batch_size 128 
 ```
-
 
 
 

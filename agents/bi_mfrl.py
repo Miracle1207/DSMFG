@@ -18,7 +18,7 @@ def load_params_from_file(filename):
 
 
 def fetch_data(alg, i):
-    path = "/home/mqr/code/AI-TaxingPolicy/agents/models/independent_ppo/100/" + alg + "/epoch_0_step_%d_100_gdp_parameters.pkl" % (
+    path = "agents/models/independent_ppo/100/" + alg + "/epoch_0_step_%d_100_gdp_parameters.pkl" % (
                 i + 1)
     para = load_params_from_file(path)
     return para['valid_action_dict']['Household']
@@ -64,7 +64,6 @@ class bi_mfrl_agent():  ## ddpg_based
         # define the optimizer...
         self.mf_critic_optimizer = optim.Adam(self.mf_critic.parameters(), self.args.p_lr, eps=self.args.eps)
 
-        # lambda_function = lambda epoch: 0 if epoch < 2000 else 0.95 ** (epoch // (35*self.args.update_cycles))
         lambda_function = lambda epoch: 0.95 ** (epoch // (35*self.args.update_cycles))
 
         self.actor_scheduler = LambdaLR(self.mf_actor_optimizer, lr_lambda=lambda_function)
@@ -149,3 +148,9 @@ class bi_mfrl_agent():  ## ddpg_based
         torch.save(self.mf_actor.state_dict(), str(dir_path) + '/bimf_house_actor.pt')
     def load(self, dir_path):
         self.mf_actor.load_state_dict(torch.load(dir_path))
+
+    # def load(self, dir_path, step=0):
+    #     file_path = os.path.join(dir_path, "mfac_{}".format(step))
+    #     model_vars = torch.load(file_path)
+    #     self.load_state_dict(model_vars)
+    #     print("[*] Loaded model from {}".format(file_path))

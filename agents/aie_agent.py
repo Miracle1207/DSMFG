@@ -44,10 +44,10 @@ class aie_agent:
         
         '''ai-economist'''
         if agent_name == "government":
-            lambda_function = lambda epoch: 0 if epoch < 10 else 0.97 ** (epoch // 10)
+            lambda_function = lambda epoch: 0 if epoch < 10 else 0.97 ** (epoch // 35)
             self.optimizer = torch.optim.Adam(self.net.parameters(), lr=self.args.p_lr, eps=1e-5)
         else:
-            lambda_function = lambda epoch: 0.97 ** (epoch // 10)
+            lambda_function = lambda epoch: 0.97 ** (epoch // 35)
             self.optimizer = torch.optim.Adam(self.net.parameters(), lr=1e-6, eps=1e-5)
         '''independant ppo'''
         # lambda_function = lambda epoch: 0.97 ** (epoch // 10)
@@ -117,7 +117,7 @@ class aie_agent:
         td_target = reward_tensor + self.args.gamma * next_value * inverse_dones
         value, pi = self.net(obs_tensor)
         td_delta = td_target - value
-        advantage = self.compute_advantage(self.args.gamma, self.args.tau, td_delta.cpu()).to(self.device)
+        advantage = self.compute_advantage(self.args.gamma, 5e-3, td_delta.cpu()).to(self.device)
         mu, std = pi
         action_dists = torch.distributions.Normal(mu.detach(), std.detach())
         old_log_probs = action_dists.log_prob(action_tensor)
@@ -149,6 +149,6 @@ class aie_agent:
         
 
     def save(self, dir_path):
-        torch.save(self.net.state_dict(), str(dir_path) + '/aie_net.pt')
+        torch.save(self.net.state_dict(), str(dir_path) + '/' + self.agent_name + '_aie_net.pt')
     def load(self, dir_path):
         self.net.load_state_dict(torch.load(dir_path))

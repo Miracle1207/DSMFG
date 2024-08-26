@@ -44,11 +44,14 @@ class economic_society:
         self.consumption_tax_rate = env_args['consumption_tax_rate']
         self.gini_weight = env_args['gini_weight']
         self.gov_task = env_args['gov_task']
+        self.financial_crisis = env_args['financial_crisis']
+        self.disasters = env_args['disasters']
         # self.episode_length = self.episode_years/self.year_per_step
         self.episode_length = 300
         self.step_cnt = 0
         self.xi_max = 0.05
         self.tau_max = 0.2
+        
 
         global_obs, private_obs = self.reset()
 
@@ -104,6 +107,17 @@ class economic_society:
         self.Kt = copy.copy(self.Kt_next)
         self.Bt = copy.copy(self.Bt_next)
         self.households.at = copy.copy(self.households.at_next)
+        
+        if self.financial_crisis and self.step_cnt == 100:
+            self.households.at = copy.copy(self.households.at_next) * 0.5
+        if self.disasters and self.step_cnt == 100:
+            self.A = self.A * 0.8
+        if self.disasters and self.step_cnt == 102:
+            self.A = self.A * 1.25
+        # if self.disasters and self.step_cnt == 100:
+            # self.households.at = copy.copy(self.households.at_next) * 0.8
+            # self.Kt = copy.copy(self.Kt_next) * 0.8
+
 
         self.government.tau, self.government.xi, self.government.tau_a, self.government.xi_a, self.Gt_prob = self.action_wrapper(self.valid_action_dict[self.government.name])
         self.government.xi *= self.xi_max
@@ -226,7 +240,7 @@ class economic_society:
         self.households.reset()
         # 2022 OECD U.S. data  https://www.oecd.org
         real_gdp = 23315.081*1e9
-        real_debt_rate = 121.29 * 0.01
+        real_debt_rate = 121.29 * 0.01   # percent /100
         real_kt_rate = 18.3* 0.01
         real_Lt = 283184.6642*1e6
         real_population = (333456*1e3)
@@ -270,6 +284,7 @@ class economic_society:
         return global_obs, private_obs
 
     def utility_function(self, c_t, h_t):
+        # c_t = c_t/self.WageRate
         # life-time CRRA utility
         if 1-self.households.CRRA == 0:
             u_c = np.log(c_t/1000)  # u_c \in (9,20)
@@ -282,19 +297,9 @@ class economic_society:
         current_utility = u_c - u_h
         return self.sigmoid(current_utility)
 
+
     def sigmoid(self, x):
         return 1 / (1 + np.exp(-x))
-
-    # def gini_coef(self, wealths):
-    #     cum_wealths = np.cumsum(sorted(np.append(wealths, 0)))
-    #     sum_wealths = cum_wealths[-1]
-    #     xarray = np.array(range(0, len(cum_wealths))) / (len(cum_wealths) - 1)
-    #     yarray = cum_wealths / sum_wealths
-    #     B = np.trapz(yarray, x=xarray)
-    #     A = 0.5 - B
-    #     gini_coef = A / (A + B)
-    #
-    #     return gini_coef
 
 
     def gini_coef(self, array):
@@ -352,9 +357,7 @@ class economic_society:
             taxes_paid = np.maximum(0, taxes_paid - tax_credit)
             return taxes_paid
     
-        return tax_f(income), 0
-        # return 0, 0
-        # return tax_f(income), tax_f(asset)
+        return tax_f(income), np.zeros_like(income)
 
     def _load_image(self):
         self.gov_img = pygame.image.load(os.path.join(ROOT_PATH, "img/gov.jpeg"))
@@ -415,14 +418,9 @@ class economic_society:
         pygame.display.flip()
 
 
-
-
-
     def close(self):
-        # 待修改
         if self.screen is not None:
             import pygame
-
             pygame.display.quit()
             pygame.quit()
             self.isopen = False

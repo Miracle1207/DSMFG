@@ -41,7 +41,6 @@ class maddpg_agent:
         self.target_critic.load_state_dict(self.critic.state_dict())
         self.target_actor.load_state_dict(self.actor.state_dict())
         
-        
         self.critic_optimizer = torch.optim.Adam(self.critic.parameters(), lr=self.args.q_lr)
         lambda_function = lambda epoch: 0.95 ** (epoch // (self.args.update_cycles / 2))
         
@@ -148,8 +147,7 @@ class maddpg_agent:
             else:
                 obs_tensor = global_obs_tensor.reshape(-1, self.obs_dim)
                 action = self.actor(obs_tensor).detach().cpu().numpy()
-                sigma = 0.01
-                action = action + sigma * np.random.randn(*action.shape)
+                action = action + self.args.noise_rate * np.random.randn(*action.shape)
                 if explore:
                     return action.flatten()
                 else:
@@ -160,14 +158,16 @@ class maddpg_agent:
             else:
                 obs_tensor = private_obs_tensor
                 action = self.actor(obs_tensor).detach().cpu().numpy()
-                sigma = 0.01
-                action = action + sigma * np.random.randn(*action.shape)
+                action = action + self.args.noise_rate * np.random.randn(*action.shape)
                 # action[:,0] = 1- action[:,0]
                 return action
         
     
     def save(self, dir_path):
         torch.save(self.actor.state_dict(), str(dir_path) + '/'+self.agent_name+ '_ddpg_net.pt')
+        
+    def load(self, dir_path):
+        self.actor.load_state_dict(torch.load(dir_path))
 
     def get_epsilon(self, start=0.1, end=0.05, decay=1e5):
         self.current_step += 1

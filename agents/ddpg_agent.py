@@ -100,7 +100,7 @@ class ddpg_agent:
     # soft update the target network...
     def _soft_update_target_network(self, target, source):
         for target_param, param in zip(target.parameters(), source.parameters()):
-            target_param.data.copy_((1 - 0.95) * param.data + 0.95 * target_param.data)
+            target_param.data.copy_((1 - self.args.tau) * param.data + self.args.tau * target_param.data)
             
     def get_action(self, global_obs_tensor, private_obs_tensor, gov_action=None, agent_name="household"):
         if self.agent_name == "government":
@@ -121,6 +121,7 @@ class ddpg_agent:
     #
 
     def save(self, dir_path):
-        torch.save(self.actor.state_dict(), str(dir_path) + '/ddpg_net.pt')
-
+        torch.save(self.actor.state_dict(), str(dir_path) +'/'+ self.agent_name + '_ddpg_net.pt')
+    def load(self, dir_path):
+        self.actor.load_state_dict(torch.load(dir_path))
 

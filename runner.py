@@ -3,7 +3,7 @@ import numpy as np
 import torch
 import os, sys
 import wandb
-
+import json
 sys.path.append(os.path.abspath('../..'))
 from agents.log_path import make_logpath
 from utils.experience_replay import replay_buffer
@@ -26,10 +26,11 @@ class Runner:
         # state normalization
         self.global_state_norm = Normalization(shape=self.envs.government.observation_space.shape[0])
         self.private_state_norm = Normalization(shape=self.envs.households.observation_space.shape[0])
-        # self.GovRewardScale = RewardScaling(shape=1, gamma=self.args.gamma)
-        # self.HouseRewardScale = RewardScaling(shape=1, gamma=self.args.gamma)
         self.model_path, _ = make_logpath(algo=self.args.house_alg +"_"+ self.args.gov_alg, n=self.args.n_households, task=self.envs.gov_task)
         save_args(path=self.model_path, args=self.args)
+        self.households_welfare = 0
+        self.find_best_response = self.args.find_best_response
+        self.eva_year_indicator = 0
         self.wandb = self.args.wandb
         if self.wandb:
             wandb.init(
@@ -52,6 +53,7 @@ class Runner:
         global_obs, private_obs = self.envs.reset()
         global_obs = self.global_state_norm(global_obs)
         private_obs = self.private_state_norm(private_obs)
+        train_freq = []
         for epoch in range(self.args.n_epochs):
             transition_dict = {'global_obs': [], 'private_obs': [], 'gov_action': [], 'house_action': [],'gov_reward': [],
                                'house_reward': [], 'next_global_obs': [], 'next_private_obs': [], 'done': [], "mean_house_actions": []}
@@ -72,8 +74,6 @@ class Runner:
                 action = {self.envs.government.name: gov_action,
                           self.envs.households.name: house_action}
                 next_global_obs, next_private_obs, gov_reward, house_reward, done = self.envs.step(action)
-                # gov_reward = self.GovRewardScale(gov_reward)
-                # house_reward = self.HouseRewardScale(house_reward)
                 next_global_obs = self.global_state_norm(next_global_obs)
                 next_private_obs = self.private_state_norm(next_private_obs)
                 
@@ -100,9 +100,10 @@ class Runner:
                     global_obs, private_obs = self.envs.reset()
                     global_obs = self.global_state_norm(global_obs)
                     private_obs = self.private_state_norm(private_obs)
-        
-            
+
+            # for leader, if follower is not BR, break
             for i in range(len(agents)):
+                # if epoch < 10 or epoch % 5 == 0 or i == 1:
                 if agents[i].on_policy == True:
                     actor_loss, critic_loss = agents[i].train(transition_dict)
                     sum_loss[i, 0] = actor_loss
@@ -113,10 +114,14 @@ class Runner:
                         actor_loss, critic_loss = agents[i].train(transitions, other_agent=agents[1-i])  # MARL has other agents
                         sum_loss[i, 0] += actor_loss
                         sum_loss[i, 1] += critic_loss
-        
+                    
             # print the log information
             if epoch % self.args.display_interval == 0:
-                economic_idicators_dict = self._evaluate_agent()
+                if epoch == 20:
+                    write_flag = False
+                else:
+                    write_flag = False
+                economic_idicators_dict = self._evaluate_agent(write_evaluate_data=write_flag)
                 now_step = (epoch + 1) * self.args.epoch_length
                 gov_rew.append(economic_idicators_dict["gov_reward"])
                 house_rew.append(economic_idicators_dict["house_reward"])
@@ -130,16 +135,24 @@ class Runner:
                     "gov_actor_loss": sum_loss[0, 0],
                     "gov_critic_loss": sum_loss[0, 1]
                 }
-            
+                if self.find_best_response == True:
+                    exploitability_rate = self.judge_best_response()
+                else:
+                    exploitability_rate = 100
+                exploitability_dict = {
+                    "exploitability": exploitability_rate
+                }
                 if self.wandb:
                     wandb.log(economic_idicators_dict)
                     wandb.log(loss_dict)
+                    wandb.log(exploitability_dict)
+                
                 print(
-                    '[{}] Epoch: {} / {}, Frames: {}, Gov_Rewards: {:.3f}, House_Rewards: {:.3f}, years:{:.3f}, actor_loss: {:.3f}, critic_loss: {:.3f}'.format(
+                    '[{}] Epoch: {} / {}, Frames: {}, Gov_Rewards: {:.3f}, House_Rewards: {:.3f}, years:{:.3f}, actor_loss: {:.3f}, critic_loss: {:.3f}, exploitability_rate: {:.6f}'.format(
                         datetime.now(), epoch, self.args.n_epochs, (epoch + 1) * self.args.epoch_length,
                         economic_idicators_dict["gov_reward"], economic_idicators_dict["house_reward"],
-                        economic_idicators_dict["years"], np.sum(sum_loss[:,0]), np.sum(sum_loss[:,1])))
-                # save models
+                        economic_idicators_dict["years"], np.sum(sum_loss[:,0]), np.sum(sum_loss[:,1]), exploitability_rate))
+
             if epoch % self.args.save_interval == 0:
                 self.house_agent.save(dir_path=self.model_path)
                 self.government_agent.save(dir_path=self.model_path)
@@ -151,98 +164,112 @@ class Runner:
         ''' record the actions of gov and households'''
         # load model
         from pathlib import Path
-        if self.args.heterogeneous_house_agent == True:
-            heter_real_rate = self.args.heter_house_rate
-        # bi_mfrl_bi_ddpg
-        self.house_agent.load(dir_path="agents/models/bi_mfrl_bi_ddpg/100/gdp/run38/bimf_house_actor.pt")
-        self.government_agent.load(dir_path="agents/models/bi_mfrl_bi_ddpg/100/gdp/run38/bi_ddpg_net.pt")
+        heter_real_rate = self.args.heter_house_rate
+        if self.args.house_alg == "bi_mfrl" and self.args.gov_alg == "bi_ddpg":
+            # bi_mfrl_bi_ddpg
+            if self.args.n_households == 100:
+                self.house_agent.load(dir_path="agents/models/bi_mfrl_bi_ddpg/100/gdp/run39/bimf_house_actor.pt")
+                self.government_agent.load(dir_path="agents/models/bi_mfrl_bi_ddpg/100/gdp/run39/bi_ddpg_net.pt")
+            elif self.args.n_households == 1000:
+                self.house_agent.load(dir_path="agents/models/bi_mfrl_bi_ddpg/1000/gdp/run15/bimf_house_actor.pt") #seed 10
+                self.government_agent.load(dir_path="agents/models/bi_mfrl_bi_ddpg/1000/gdp/run15/bi_ddpg_net.pt")
+        if self.args.house_alg == "aie" and self.args.gov_alg == "aie":
+            if self.args.n_households == 100:
+                self.house_agent.load(dir_path="agents/models/aie_aie/100/gdp/run64/household_aie_net.pt")
+                self.government_agent.load(dir_path="agents/models/aie_aie/100/gdp/run64/government_aie_net.pt")
+            elif self.args.n_households == 1000:
+                self.house_agent.load(dir_path="agents/models/bi_mfrl_bi_ddpg/1000/gdp/run15/bimf_house_actor.pt")
+                self.government_agent.load(dir_path="agents/models/bi_mfrl_bi_ddpg/1000/gdp/run15/bi_ddpg_net.pt")
+        if self.args.house_alg == "maddpg" and self.args.gov_alg == "maddpg":
+            if self.args.n_households == 100:
+                # maddpg
+                self.house_agent.load(dir_path="agents/models/maddpg_maddpg/100/gdp/run28/household_ddpg_net.pt")
+                self.government_agent.load(dir_path="agents/models/maddpg_maddpg/100/gdp/run28/government_ddpg_net.pt")
+            elif self.args.n_households == 1000:
+                # maddpg
+                self.house_agent.load(dir_path="agents/models/maddpg_maddpg/1000/gdp/run7/household_ddpg_net.pt")   # run10 - seed 11
+                self.government_agent.load(dir_path="agents/models/maddpg_maddpg/1000/gdp/run7/government_ddpg_net.pt")  # run7 -seed 2
+        # mfrl+ddpg
+        if self.args.house_alg == "mfrl" and self.args.gov_alg == "ddpg":
+            if self.args.n_households == 100:
+                self.house_agent.load(dir_path="agents/models/mfrl_ddpg/100/gdp/run15/house_actor.pt")
+                self.government_agent.load(dir_path="agents/models/mfrl_ddpg/100/gdp/run15/ddpg_net.pt")
+            elif self.args.n_households == 1000:
+                self.house_agent.load(
+                    dir_path="agents/models/mfrl_ddpg/1000/gdp/run4/house_actor.pt")# run2 -seed2
+                self.government_agent.load(
+                    dir_path="agents/models/mfrl_ddpg/1000/gdp/run4/government_ddpg_net.pt")#run4 - seed1
+        # iddpg
+        if self.args.house_alg == "ddpg" and self.args.gov_alg == "ddpg":
+            if self.args.n_households == 100:
+                self.house_agent.load(
+                    dir_path="agents/models/ddpg_ddpg/100/gdp/run15/household_ddpg_net.pt")
+                self.government_agent.load(
+                    dir_path="agents/models/ddpg_ddpg/100/gdp/run15/government_ddpg_net.pt")
+            elif self.args.n_households == 1000:
+                self.house_agent.load(dir_path="agents/models/ddpg_ddpg/1000/gdp/run7/household_ddpg_net.pt")
+                self.government_agent.load(dir_path="agents/models/ddpg_ddpg/1000/gdp/run7/government_ddpg_net.pt")
+        # real + rule_based
+        economic_idicators_dict = self._evaluate_agent(write_evaluate_data=True)
 
-        save_path = os.path.abspath('.') + "/agents/models/actions_set/" + self.args.house_alg +"_"+ self.args.gov_alg + "/" + str(self.args.n_households)
-        if not Path(save_path).exists():
-            os.makedirs(Path(save_path))
-        eco_indicators = ['c','h','utility', 'wealth', 'income',"gdp"]
-        record_list = [[[[] for j in range(2)] for i in range(len(eco_indicators))] for epi_i in range(self.args.eval_episodes)]
-
-        for epoch_i in range(self.args.eval_episodes):
-        # for epoch_i in range(1):
-            global_obs, private_obs = self.eval_env.reset()
-            global_obs = self.global_state_norm(global_obs)
-            private_obs = self.private_state_norm(private_obs)
-
-            for steps in range(300):
-                global_obs_tensor = self._get_tensor_inputs(global_obs)
-                private_obs_tensor = self._get_tensor_inputs(private_obs)
-                gov_action = self.government_agent.get_action(global_obs_tensor=global_obs_tensor,
-                                                              private_obs_tensor=private_obs_tensor,
-                                                              agent_name="government")
-                house_action = self.house_agent.get_action(global_obs_tensor=global_obs_tensor,
-                                                           private_obs_tensor=private_obs_tensor,
-                                                           gov_action=gov_action, agent_name="household")
-                if self.args.heterogeneous_house_agent == True:
-                    house_action_real = self.heter_house.get_action(global_obs_tensor=global_obs_tensor,
-                                                           private_obs_tensor=private_obs_tensor,
-                                                           gov_action=gov_action, agent_name="household")
-                if "mf" in self.args.house_alg:
-                    house_action, mean_house_action = house_action
-                else:
-                    mean_house_action = None
-                if self.args.heterogeneous_house_agent == True:
-                    if "mf" in self.args.heter_house_alg:
-                        house_action_real, _ = house_action_real
-                    house_action = np.concatenate((house_action_real[:heter_real_rate], house_action[heter_real_rate:]),axis=0)
-                action = {self.envs.government.name: gov_action,
-                          self.envs.households.name: house_action}
-                next_global_obs, next_private_obs, gov_reward, house_reward, done = self.eval_env.step(action)
-
-                datas = [self.eval_env.consumption, self.eval_env.workingHours, house_reward, self.eval_env.households.at, self.eval_env.post_income, self.eval_env.per_household_gdp]
-                for i in range(len(datas)):
-                    if i == 5:
-                        record_list[epoch_i][i][0].append(datas[i])
-                        record_list[epoch_i][i][1].append(datas[i])
-                    else:
-                        record_list[epoch_i][i][0].append(np.mean(datas[i][:heter_real_rate]))
-                        record_list[epoch_i][i][1].append(np.mean(datas[i][heter_real_rate:]))
-  
-                next_global_obs = self.global_state_norm(next_global_obs)
-                next_private_obs = self.private_state_norm(next_private_obs)
-
-                if done:
-                    break
-                global_obs = next_global_obs
-                private_obs = next_private_obs
-
-        mean_data = np.mean(np.array(record_list),axis=0)
-        if self.args.heterogeneous_house_agent == True:
-            add_name = "heter" + "_" + str(heter_real_rate)
-        else:
-            add_name = "homo"
-        np.savetxt(save_path+"/"+add_name+"_house_data.txt", mean_data.reshape(-1, 300), delimiter='\t')
-
-    
+        exploitability_rate = self.judge_best_response()
+        print("exploitability:", exploitability_rate)
+        print("social welfare: ",economic_idicators_dict["social_welfare"])
+        print("leader's payoff: ",economic_idicators_dict["gov_reward"])
 
 
     def init_economic_dict(self, gov_reward, households_reward):
+    
         self.econ_dict = {
-            "gov_reward": gov_reward, # sum
+            "gov_reward": gov_reward,  # sum
             "social_welfare": np.sum(households_reward),  # sum
-            "house_reward": np.sum(households_reward),  # sum
+            "house_reward": households_reward,  # sum
             "years": self.eval_env.step_cnt,  # max
-            "income": self.eval_env.post_income,  # mean
-            "total_tax": self.eval_env.tax_array,
-            "income_tax": self.eval_env.income_tax,
-            "wealth": self.eval_env.households.at_next,
-            "wealth_tax": self.eval_env.asset_tax,
+            "house_income": self.eval_env.post_income,  # mean
+            "house_total_tax": self.eval_env.tax_array,
+            "house_income_tax": self.eval_env.income_tax,
+            "house_wealth": self.eval_env.households.at_next,
+            "house_wealth_tax": self.eval_env.asset_tax,
             "per_gdp": self.eval_env.per_household_gdp,
             "GDP": self.eval_env.GDP,  # sum
             "income_gini": self.eval_env.income_gini,
             "wealth_gini": self.eval_env.wealth_gini,
             "WageRate": self.eval_env.WageRate,
             "total_labor": self.eval_env.Lt,
-            "consumption": self.eval_env.consumption}
+            "house_consumption": self.eval_env.consumption,
+            "house_work_hours": self.eval_env.ht,
+            "gov_spending": self.eval_env.Gt_prob * self.eval_env.GDP}
         
-    
-    def _evaluate_agent(self):
-        eval_econ = ["gov_reward", "house_reward", "social_welfare", "per_gdp","income_gini","wealth_gini","years","GDP"]
+    def judge_best_response(self, transition_dict=None):
+        # fix the leader's policy, update follower's policy until follower's value don't change.
+        current_indicators = self._evaluate_agent()
+        current_households_welfare = current_indicators["social_welfare"]
+        current_government_payoff = current_indicators['gov_reward']
+        house_agent_update = copy.copy(self.house_agent)
+        government_agent_update = copy.copy(self.government_agent)
+        
+        if self.house_agent.on_policy == True:
+            actor_loss, critic_loss = house_agent_update.train(transition_dict)
+            actor_loss, critic_loss = government_agent_update.train(transition_dict)
+        else:
+            for _ in range(self.args.update_cycles):
+                transitions = self.buffer.sample(self.args.batch_size)
+                house_agent_update.train(transitions, other_agent=self.government_agent)  # MARL has other agents
+                government_agent_update.train(transitions, other_agent=self.house_agent)  # MARL has other agents
+        new_households_welfare = self._evaluate_agent(single_update_household=house_agent_update, judge_exploitability=True)["social_welfare"]
+        new_government_payoff = self._evaluate_agent(single_update_government=government_agent_update, judge_exploitability=True)["gov_reward"]
+        
+        exploitability_rate = abs((new_households_welfare - current_households_welfare)/current_households_welfare) + abs((new_government_payoff - current_government_payoff)/current_government_payoff)
+        return exploitability_rate
+
+
+    def _evaluate_agent(self, single_update_household=None, single_update_government=None, judge_exploitability=False, write_evaluate_data=False):
+        # eval_econ = ["gov_reward", "house_reward", "social_welfare", "per_gdp","income_gini","wealth_gini","years","GDP"]
+        eval_econ = ["gov_reward", "house_reward", "social_welfare", "per_gdp", "income_gini",
+                     "wealth_gini", "years", "GDP", "gov_spending", "house_total_tax", "house_income_tax",
+                     "house_wealth_tax", "house_wealth", "house_income", "house_consumption", "house_work_hours",
+                     "total_labor", "WageRate"]
+
         episode_econ_dict = dict(zip(eval_econ, [[] for i in range(len(eval_econ))]))
         final_econ_dict = dict(zip(eval_econ, [None for i in range(len(eval_econ))]))
         for epoch_i in range(self.args.eval_episodes):
@@ -255,25 +282,55 @@ class Runner:
                 with torch.no_grad():
                     global_obs_tensor = self._get_tensor_inputs(global_obs)
                     private_obs_tensor = self._get_tensor_inputs(private_obs)
-                    gov_action = self.government_agent.get_action(global_obs_tensor=global_obs_tensor,
+                    if judge_exploitability == True and single_update_government != None:
+                        gov_action = single_update_government.get_action(global_obs_tensor=global_obs_tensor,
+                                                                      private_obs_tensor=private_obs_tensor,
+                                                                      agent_name="government")
+                    else:
+                        gov_action = self.government_agent.get_action(global_obs_tensor=global_obs_tensor,
                                                                   private_obs_tensor=private_obs_tensor,
                                                                   agent_name="government")
                     house_action = self.house_agent.get_action(global_obs_tensor=global_obs_tensor,
                                                                private_obs_tensor=private_obs_tensor,
                                                                gov_action=gov_action, agent_name="household")
+                    
+                    if judge_exploitability == True and single_update_household != None:
+                        
+                        update_house_action = single_update_household.get_action(global_obs_tensor=global_obs_tensor,
+                                                                                 private_obs_tensor=private_obs_tensor,
+                                                                                 gov_action=gov_action,
+                                                                                 agent_name="household")
+                    
                     if "mf" in self.args.house_alg:
                         house_action, mean_house_action = house_action
                     else:
                         mean_house_action = None
+                    if judge_exploitability == True and single_update_household != None:
+                        if "mf" in self.args.house_alg:
+                            update_house_action, _ = update_house_action
+                        random_house_index = np.random.randint(0, self.args.n_households)
+                        house_action[random_house_index] = update_house_action[random_house_index]
+                        if "mf" in self.args.house_alg:
+                            mean_house_action = np.mean(house_action, axis=-2)
                     action = {self.envs.government.name: gov_action,
                               self.envs.households.name: house_action}
                     next_global_obs, next_private_obs, gov_reward, house_reward, done = self.eval_env.step(action)
                     next_global_obs = self.global_state_norm(next_global_obs)
                     next_private_obs = self.private_state_norm(next_private_obs)
+
+                    if (not self.government_agent.on_policy) or (not self.house_agent.on_policy):
+                        # off policy: replay buffer
+                        self.buffer.add(global_obs, private_obs, gov_action, house_action, gov_reward, house_reward,
+                                        next_global_obs, next_private_obs, float(done), mean_action=mean_house_action)
+
                 self.init_economic_dict(gov_reward, house_reward)
                 for each in eval_econ:
-                    eval_econ_dict[each].append(self.econ_dict[each])
+                    if "house_" in each:
+                        eval_econ_dict[each].append(self.econ_dict[each].tolist())
+                    else:
+                        eval_econ_dict[each].append(self.econ_dict[each])
                 if done:
+                    print(self.eval_env.step_cnt)
                     break
                 
                 global_obs = next_global_obs
@@ -289,6 +346,19 @@ class Runner:
         
         for key, value in episode_econ_dict.items():
             final_econ_dict[key] = np.mean(value)
+        # 将字典直接写入文件
+        if self.econ_dict['years'] >= self.eva_year_indicator:
+            write_evaluate_data = write_evaluate_data and True
+            self.eva_year_indicator = self.econ_dict['years']
+       
+        if write_evaluate_data == True:
+            print("============= Finish ================")
+            print("============= Finish ================")
+            store_path = "agents/data/"+self.args.economic_shock+"/N="+str(self.args.n_households)+"/"
+            if not os.path.exists(os.path.dirname(store_path)):
+                os.makedirs(os.path.dirname(store_path))
+            with open(store_path + self.args.house_alg + "_" + self.args.gov_alg +"_"+str(self.args.n_households)+ "_data.json", "w") as file:
+                json.dump(eval_econ_dict, file)
         return final_econ_dict
 
 

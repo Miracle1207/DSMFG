@@ -18,7 +18,7 @@ def load_params_from_file(filename):
 
 
 def fetch_data(alg, i):
-    path = "/home/mqr/code/AI-TaxingPolicy/agents/models/independent_ppo/100/" + alg + "/epoch_0_step_%d_100_gdp_parameters.pkl" % (
+    path = "agents/models/independent_ppo/100/" + alg + "/epoch_0_step_%d_100_gdp_parameters.pkl" % (
                 i + 1)
     para = load_params_from_file(path)
     return para['valid_action_dict']['Household']
@@ -139,12 +139,13 @@ class mfrl_agent():
     # soft update the target network...
     def _soft_update_target_network(self, target, source):
         for target_param, param in zip(target.parameters(), source.parameters()):
-            target_param.data.copy_((1 - 0.95) * param.data + 0.95 * target_param.data)
+            target_param.data.copy_((1 - self.args.tau) * param.data + self.args.tau * target_param.data)
     
     def save(self, dir_path):
         torch.save(self.mf_actor.state_dict(), str(dir_path) + '/house_actor.pt')
     
-
+    def load(self, dir_path):
+        self.mf_actor.load_state_dict(torch.load(dir_path))
     # def load(self, dir_path, step=0):
     #     file_path = os.path.join(dir_path, "mfac_{}".format(step))
     #     model_vars = torch.load(file_path)
