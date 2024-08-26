@@ -1,8 +1,4 @@
 numpy
-<<<<<<< HEAD
-=======
-torch
->>>>>>> b23b21d4c93de996f09712e5c4807a6200e2efcf
 pygame
 gym
 wandb
@@ -12,8 +8,4 @@ pandas
 scipy
 omegaconf
 quantecon
-<<<<<<< HEAD
 matplotlib
-=======
-matplotlib
->>>>>>> b23b21d4c93de996f09712e5c4807a6200e2efcf

@@ -1,11 +1,7 @@
 # Learning Macroeconomic Policies based on Microfoundations: A Dynamic Stackelberg Mean Field Game Approach
 
 <div style="text-align:center">
-<<<<<<< HEAD
   <img src="img/smfg.png" alt="示例图片" >
-=======
-  <img src="https://anonymous.4open.science/api/repo/SMFG_macro_7740/file/img/smfg.png?v=5ad7dba5" alt="示例图片" >
->>>>>>> b23b21d4c93de996f09712e5c4807a6200e2efcf
   <figcaption style="text-align:center;"></figcaption>
 </div>
 
