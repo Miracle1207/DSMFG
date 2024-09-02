@@ -1,7 +1,6 @@
 import numpy as np
 from env.env_core import economic_society
 from agents.rule_based import rule_agent
-from agents.ppo_agent import ppo_agent
 from agents.ddpg_agent import ddpg_agent
 from agents.maddpg_agent import maddpg_agent
 from agents.real_data.real_data import real_agent
@@ -20,7 +19,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", type=str, default='default')
     parser.add_argument("--wandb", action='store_true')
-    parser.add_argument("--test", action='store_false')
+    parser.add_argument("--test", action='store_true')
     parser.add_argument("--br", action='store_true')
     parser.add_argument("--house_alg", type=str, default='mfac', help="rule_based, ippo, mfac, real")
     parser.add_argument("--gov_alg", type=str, default='ac', help="ac, rule_based, independent")
@@ -63,8 +62,8 @@ def select_agent(alg, agent_name):
     else:
         if alg == "rule_based" or alg == "us_federal" or alg == "saez":
             gov_agent = rule_agent(env, yaml_cfg.Trainer)
-        elif alg == "ppo":
-            gov_agent = ppo_agent(env, yaml_cfg.Trainer, agent_name="government")
+        # elif alg == "ppo":
+        #     gov_agent = ppo_agent(env, yaml_cfg.Trainer, agent_name="government")
         elif alg == "ddpg":
             gov_agent = ddpg_agent(env, yaml_cfg.Trainer, agent_name="government")
         elif alg == "maddpg":
@@ -77,6 +76,48 @@ def select_agent(alg, agent_name):
             print("Wrong Choice!")
         return gov_agent
 
+def choose_model_path(house_alg, gov_alg, households_num):
+    if house_alg == "bi_mfrl" and gov_alg == "bi_ddpg":
+        # bi_mfrl_bi_ddpg
+        if households_num == 100:
+            house_model_path="agents/models/bi_mfrl_bi_ddpg/100/gdp/run39/bimf_house_actor.pt"
+            government_model_path="agents/models/bi_mfrl_bi_ddpg/100/gdp/run39/bi_ddpg_net.pt"
+        elif households_num == 1000:
+            house_model_path="agents/models/bi_mfrl_bi_ddpg/1000/gdp/run15/bimf_house_actor.pt" # seed 10
+            government_model_path="agents/models/bi_mfrl_bi_ddpg/1000/gdp/run15/bi_ddpg_net.pt"
+    if house_alg == "aie" and gov_alg == "aie":
+        if households_num == 100:
+            house_model_path="agents/models/aie_aie/100/gdp/run64/household_aie_net.pt"
+            government_model_path="agents/models/aie_aie/100/gdp/run64/government_aie_net.pt"
+        elif households_num == 1000:
+            house_model_path="agents/models/bi_mfrl_bi_ddpg/1000/gdp/run15/bimf_house_actor.pt"
+            government_model_path="agents/models/bi_mfrl_bi_ddpg/1000/gdp/run15/bi_ddpg_net.pt"
+    if house_alg == "maddpg" and gov_alg == "maddpg":
+        if households_num == 100:
+            # maddpg
+            house_model_path="agents/models/maddpg_maddpg/100/gdp/run28/household_ddpg_net.pt"
+            government_model_path="agents/models/maddpg_maddpg/100/gdp/run28/government_ddpg_net.pt"
+        elif households_num == 1000:
+            # maddpg
+            house_model_path="agents/models/maddpg_maddpg/1000/gdp/run7/household_ddpg_net.pt"  # run10 - seed 11
+            government_model_path="agents/models/maddpg_maddpg/1000/gdp/run7/government_ddpg_net.pt"  # run7 -seed 2
+    # mfrl+ddpg
+    if house_alg == "mfrl" and gov_alg == "ddpg":
+        if households_num == 100:
+            house_model_path="agents/models/mfrl_ddpg/100/gdp/run15/house_actor.pt"
+            government_model_path="agents/models/mfrl_ddpg/100/gdp/run15/ddpg_net.pt"
+        elif households_num == 1000:
+            house_model_path="agents/models/mfrl_ddpg/1000/gdp/run4/house_actor.pt"  # run2 -seed2
+            government_model_path="agents/models/mfrl_ddpg/1000/gdp/run4/government_ddpg_net.pt"  # run4 - seed1
+    # iddpg
+    if house_alg == "ddpg" and gov_alg == "ddpg":
+        if households_num == 100:
+            house_model_path="agents/models/ddpg_ddpg/100/gdp/run15/household_ddpg_net.pt"
+            government_model_path="agents/models/ddpg_ddpg/100/gdp/run15/government_ddpg_net.pt"
+        elif households_num == 1000:
+            house_model_path="agents/models/ddpg_ddpg/1000/gdp/run7/household_ddpg_net.pt"
+            government_model_path="agents/models/ddpg_ddpg/1000/gdp/run7/government_ddpg_net.pt"
+    return house_model_path, government_model_path
 
 if __name__ == '__main__':
     # set signle thread
@@ -118,7 +159,8 @@ if __name__ == '__main__':
         heter_house_agent = select_agent(yaml_cfg.Trainer["heter_house_alg"], agent_name="households")
         runner = Runner(env, yaml_cfg.Trainer, house_agent=house_agent, government_agent=gov_agent,
                         heter_house=heter_house_agent)
-        runner.test()
+        house_model_path, government_model_path = choose_model_path(house_alg=args.house_alg, gov_alg=args.gov_alg, households_num=args.n_households)
+        runner.test(house_model_path, government_model_path)
     else:
         runner = Runner(env, yaml_cfg.Trainer, house_agent=house_agent, government_agent=gov_agent)
         runner.run()

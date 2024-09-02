@@ -40,7 +40,7 @@ class real_agent:
         # start to build the network.
         self.households_net = CloneModel(house_obs_dim, house_action_dim)
         self.households_net.load_state_dict(
-            torch.load("agents/real_data/2023_11_23_20_37_trained_model.pth")) # v1 nice!
+            torch.load("agents/real_data/2023_11_23_20_37_trained_model.pth", weights_only=True)) # v1 nice!
         if self.args.cuda:
             self.households_net.cuda()
         # get the action max

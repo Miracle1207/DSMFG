@@ -40,7 +40,7 @@ class aie_agent:
 
         if agent_name == "household":
             if self.args.bc == True:
-                self.net.load_state_dict(torch.load("agents/real_data/2024_01_10_22_02_ppo_trained_model.pth"))
+                self.net.load_state_dict(torch.load("agents/real_data/2024_01_10_22_02_ppo_trained_model.pth", weights_only=True))
         
         '''ai-economist'''
         if agent_name == "government":
@@ -151,4 +151,4 @@ class aie_agent:
     def save(self, dir_path):
         torch.save(self.net.state_dict(), str(dir_path) + '/' + self.agent_name + '_aie_net.pt')
     def load(self, dir_path):
-        self.net.load_state_dict(torch.load(dir_path))
+        self.net.load_state_dict(torch.load(dir_path, map_location=torch.device(self.device), weights_only=True))

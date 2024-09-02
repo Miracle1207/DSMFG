@@ -160,63 +160,10 @@ class Runner:
         if self.wandb:
             wandb.finish()
 
-    def test(self):
-        ''' record the actions of gov and households'''
-        # load model
-        from pathlib import Path
-        heter_real_rate = self.args.heter_house_rate
-        if self.args.house_alg == "bi_mfrl" and self.args.gov_alg == "bi_ddpg":
-            # bi_mfrl_bi_ddpg
-            if self.args.n_households == 100:
-                self.house_agent.load(dir_path="agents/models/bi_mfrl_bi_ddpg/100/gdp/run39/bimf_house_actor.pt")
-                self.government_agent.load(dir_path="agents/models/bi_mfrl_bi_ddpg/100/gdp/run39/bi_ddpg_net.pt")
-            elif self.args.n_households == 1000:
-                self.house_agent.load(dir_path="agents/models/bi_mfrl_bi_ddpg/1000/gdp/run15/bimf_house_actor.pt") #seed 10
-                self.government_agent.load(dir_path="agents/models/bi_mfrl_bi_ddpg/1000/gdp/run15/bi_ddpg_net.pt")
-        if self.args.house_alg == "aie" and self.args.gov_alg == "aie":
-            if self.args.n_households == 100:
-                self.house_agent.load(dir_path="agents/models/aie_aie/100/gdp/run64/household_aie_net.pt")
-                self.government_agent.load(dir_path="agents/models/aie_aie/100/gdp/run64/government_aie_net.pt")
-            elif self.args.n_households == 1000:
-                self.house_agent.load(dir_path="agents/models/bi_mfrl_bi_ddpg/1000/gdp/run15/bimf_house_actor.pt")
-                self.government_agent.load(dir_path="agents/models/bi_mfrl_bi_ddpg/1000/gdp/run15/bi_ddpg_net.pt")
-        if self.args.house_alg == "maddpg" and self.args.gov_alg == "maddpg":
-            if self.args.n_households == 100:
-                # maddpg
-                self.house_agent.load(dir_path="agents/models/maddpg_maddpg/100/gdp/run28/household_ddpg_net.pt")
-                self.government_agent.load(dir_path="agents/models/maddpg_maddpg/100/gdp/run28/government_ddpg_net.pt")
-            elif self.args.n_households == 1000:
-                # maddpg
-                self.house_agent.load(dir_path="agents/models/maddpg_maddpg/1000/gdp/run7/household_ddpg_net.pt")   # run10 - seed 11
-                self.government_agent.load(dir_path="agents/models/maddpg_maddpg/1000/gdp/run7/government_ddpg_net.pt")  # run7 -seed 2
-        # mfrl+ddpg
-        if self.args.house_alg == "mfrl" and self.args.gov_alg == "ddpg":
-            if self.args.n_households == 100:
-                self.house_agent.load(dir_path="agents/models/mfrl_ddpg/100/gdp/run15/house_actor.pt")
-                self.government_agent.load(dir_path="agents/models/mfrl_ddpg/100/gdp/run15/ddpg_net.pt")
-            elif self.args.n_households == 1000:
-                self.house_agent.load(
-                    dir_path="agents/models/mfrl_ddpg/1000/gdp/run4/house_actor.pt")# run2 -seed2
-                self.government_agent.load(
-                    dir_path="agents/models/mfrl_ddpg/1000/gdp/run4/government_ddpg_net.pt")#run4 - seed1
-        # iddpg
-        if self.args.house_alg == "ddpg" and self.args.gov_alg == "ddpg":
-            if self.args.n_households == 100:
-                self.house_agent.load(
-                    dir_path="agents/models/ddpg_ddpg/100/gdp/run15/household_ddpg_net.pt")
-                self.government_agent.load(
-                    dir_path="agents/models/ddpg_ddpg/100/gdp/run15/government_ddpg_net.pt")
-            elif self.args.n_households == 1000:
-                self.house_agent.load(dir_path="agents/models/ddpg_ddpg/1000/gdp/run7/household_ddpg_net.pt")
-                self.government_agent.load(dir_path="agents/models/ddpg_ddpg/1000/gdp/run7/government_ddpg_net.pt")
-        # real + rule_based
+    def test(self,house_model_path, government_model_path):
+        self.house_agent.load(dir_path=house_model_path)
+        self.government_agent.load(dir_path=government_model_path)
         economic_idicators_dict = self._evaluate_agent(write_evaluate_data=True)
-
-        exploitability_rate = self.judge_best_response()
-        print("exploitability:", exploitability_rate)
-        print("social welfare: ",economic_idicators_dict["social_welfare"])
-        print("leader's payoff: ",economic_idicators_dict["gov_reward"])
-
 
     def init_economic_dict(self, gov_reward, households_reward):
     

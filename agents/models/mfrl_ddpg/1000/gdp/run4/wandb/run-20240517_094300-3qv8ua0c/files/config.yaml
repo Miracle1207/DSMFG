@@ -1,0 +1,117 @@
+wandb_version: 1
+
+_content:
+  desc: null
+  value:
+    batch_size: '128'
+    bc: 'False'
+    best_response: 'False'
+    buffer_size: '1000000.0'
+    clip: '0.1'
+    cuda: 'True'
+    display_interval: '1'
+    ent_coef: '0.01'
+    entropy_coef: '0.025'
+    env_name: wealth_distribution
+    epoch_length: '300'
+    eps: 1e-05
+    epsilon: '0.1'
+    eval_episodes: '10'
+    find_best_response: 'False'
+    gamma: '0.975'
+    gov_alg: ddpg
+    heter_house_alg: real
+    heter_house_rate: '100'
+    heterogeneous_house_agent: 'False'
+    hidden_size: '128'
+    house_alg: mfrl
+    init_exploration_policy: gaussian
+    init_exploration_steps: '1000'
+    initial_train: '100'
+    log_std_max: '2'
+    log_std_min: '-20'
+    max_grad_norm: '0.5'
+    n_epochs: '1000'
+    n_households: '1000'
+    noise_rate: '0.1'
+    p_lr: '0.0003'
+    ppo_gamma: '0.99'
+    ppo_tau: '0.95'
+    q_lr: '0.0003'
+    save_interval: '100'
+    seed: '1'
+    target_update_interval: '1'
+    tau: '0.005'
+    update_cycles: '100'
+    update_each_epoch: '100'
+    update_epoch: '20'
+    update_freq: '2'
+    vloss_coef: '0.5'
+    wandb: 'True'
+_flags_cache:
+  desc: null
+  value:
+    allow_objects: null
+    convert: null
+    readonly: null
+    struct: null
+_metadata:
+  desc: null
+  value: ContainerMetadata(ref_type=typing.Any, object_type=<class 'dict'>, optional=True,
+    key='Trainer', flags={}, flags_root=False, resolver_cache=defaultdict(<class 'dict'>,
+    {}), key_type=typing.Any, element_type=typing.Any)
+_parent:
+  desc: null
+  value: '{''expr_name'': ''test'', ''log_dir'': ''./logs'', ''device_num'': 0, ''wandb'':
+    True, ''Environment'': {''Entities'': [{''entity_name'': ''government'', ''entity_args'':
+    {''n'': 1, ''action_shape'': 5}}, {''entity_name'': ''household'', ''entity_args'':
+    {''n'': 1000, ''CRRA'': 1, ''IFE'': 2, ''eta'': 0, ''action_shape'': 2, ''e_p'':
+    2.2e-06, ''e_q'': 0.99, ''rho_e'': 0.982, ''sigma_e'': 0.2, ''super_e'': 504.3}}],
+    ''env_core'': {''possible_agents'': [''government'', ''households''], ''env_args'':
+    {''tax_moudle'': ''ai_agent'', ''alpha'': 0.7445, ''A'': 10.0, ''year_per_step'':
+    1, ''depreciation_rate'': 0.06, ''consumption_tax_rate'': 0.065, ''interest_rate'':
+    0.04, ''gini_weight'': 1, ''gov_task'': ''gdp''}}}, ''Trainer'': {''n_households'':
+    1000, ''log_std_min'': -20, ''log_std_max'': 2, ''hidden_size'': 128, ''cuda'':
+    True, ''q_lr'': 0.0003, ''p_lr'': 0.0003, ''buffer_size'': 1000000.0, ''env_name'':
+    ''wealth_distribution'', ''init_exploration_policy'': ''gaussian'', ''n_epochs'':
+    1000, ''epoch_length'': 300, ''update_cycles'': 100, ''target_update_interval'':
+    1, ''display_interval'': 1, ''batch_size'': 128, ''gamma'': 0.975, ''tau'': 0.005,
+    ''eval_episodes'': 10, ''init_exploration_steps'': 1000, ''ppo_tau'': 0.95, ''ppo_gamma'':
+    0.99, ''eps'': 1e-05, ''update_epoch'': 20, ''clip'': 0.1, ''vloss_coef'': 0.5,
+    ''ent_coef'': 0.01, ''max_grad_norm'': 0.5, ''update_freq'': 2, ''initial_train'':
+    100, ''noise_rate'': 0.1, ''epsilon'': 0.1, ''save_interval'': 100, ''house_alg'':
+    ''mfrl'', ''gov_alg'': ''ddpg'', ''update_each_epoch'': 100, ''seed'': 1, ''wandb'':
+    True, ''best_response'': False, ''entropy_coef'': 0.025, ''bc'': False, ''heterogeneous_house_agent'':
+    False, ''heter_house_alg'': ''real'', ''heter_house_rate'': 100, ''find_best_response'':
+    False}}'
+_wandb:
+  desc: null
+  value:
+    cli_version: 0.12.21
+    code_path: code/main.py
+    framework: huggingface
+    huggingface_version: 4.13.0
+    is_jupyter_run: false
+    is_kaggle_kernel: false
+    python_version: 3.8.13
+    start_time: 1715910180
+    t:
+      1:
+      - 1
+      - 11
+      - 49
+      - 55
+      2:
+      - 1
+      - 11
+      - 49
+      - 55
+      3:
+      - 2
+      - 13
+      - 16
+      4: 3.8.13
+      5: 0.12.21
+      6: 4.13.0
+      8:
+      - 5

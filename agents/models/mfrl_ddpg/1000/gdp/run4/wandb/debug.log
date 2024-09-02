@@ -1,0 +1,226 @@
+2024-05-17 09:43:00,775 INFO    MainThread:8395 [wandb_setup.py:_flush():76] Configure stats pid to 8395
+2024-05-17 09:43:00,775 INFO    MainThread:8395 [wandb_setup.py:_flush():76] Loading settings from /home/mqr/.config/wandb/settings
+2024-05-17 09:43:00,775 INFO    MainThread:8395 [wandb_setup.py:_flush():76] Loading settings from /home/mqr/code/TaxAI/wandb/settings
+2024-05-17 09:43:00,775 INFO    MainThread:8395 [wandb_setup.py:_flush():76] Loading settings from environment variables: {}
+2024-05-17 09:43:00,775 INFO    MainThread:8395 [wandb_setup.py:_flush():76] Inferring run settings from compute environment: {'program_relpath': 'main.py', 'program': 'main.py'}
+2024-05-17 09:43:00,776 INFO    MainThread:8395 [wandb_init.py:_log_setup():461] Logging user logs to /home/mqr/code/TaxAI/agents/models/mfrl_ddpg/1000/gdp/run4/wandb/run-20240517_094300-3qv8ua0c/logs/debug.log
+2024-05-17 09:43:00,776 INFO    MainThread:8395 [wandb_init.py:_log_setup():462] Logging internal logs to /home/mqr/code/TaxAI/agents/models/mfrl_ddpg/1000/gdp/run4/wandb/run-20240517_094300-3qv8ua0c/logs/debug-internal.log
+2024-05-17 09:43:00,776 INFO    MainThread:8395 [wandb_init.py:init():495] calling init triggers
+2024-05-17 09:43:00,777 INFO    MainThread:8395 [wandb_init.py:init():498] wandb.init called with sweep_config: {}
+config: {'_metadata': ContainerMetadata(ref_type=typing.Any, object_type=<class 'dict'>, optional=True, key='Trainer', flags={}, flags_root=False, resolver_cache=defaultdict(<class 'dict'>, {}), key_type=typing.Any, element_type=typing.Any), '_parent': {'expr_name': 'test', 'log_dir': './logs', 'device_num': 0, 'wandb': True, 'Environment': {'Entities': [{'entity_name': 'government', 'entity_args': {'n': 1, 'action_shape': 5}}, {'entity_name': 'household', 'entity_args': {'n': 1000, 'CRRA': 1, 'IFE': 2, 'eta': 0, 'action_shape': 2, 'e_p': 2.2e-06, 'e_q': 0.99, 'rho_e': 0.982, 'sigma_e': 0.2, 'super_e': 504.3}}], 'env_core': {'possible_agents': ['government', 'households'], 'env_args': {'tax_moudle': 'ai_agent', 'alpha': 0.7445, 'A': 10.0, 'year_per_step': 1, 'depreciation_rate': 0.06, 'consumption_tax_rate': 0.065, 'interest_rate': 0.04, 'gini_weight': 1, 'gov_task': 'gdp'}}}, 'Trainer': {'n_households': 1000, 'log_std_min': -20, 'log_std_max': 2, 'hidden_size': 128, 'cuda': True, 'q_lr': 0.0003, 'p_lr': 0.0003, 'buffer_size': 1000000.0, 'env_name': 'wealth_distribution', 'init_exploration_policy': 'gaussian', 'n_epochs': 1000, 'epoch_length': 300, 'update_cycles': 100, 'target_update_interval': 1, 'display_interval': 1, 'batch_size': 128, 'gamma': 0.975, 'tau': 0.005, 'eval_episodes': 10, 'init_exploration_steps': 1000, 'ppo_tau': 0.95, 'ppo_gamma': 0.99, 'eps': 1e-05, 'update_epoch': 20, 'clip': 0.1, 'vloss_coef': 0.5, 'ent_coef': 0.01, 'max_grad_norm': 0.5, 'update_freq': 2, 'initial_train': 100, 'noise_rate': 0.1, 'epsilon': 0.1, 'save_interval': 100, 'house_alg': 'mfrl', 'gov_alg': 'ddpg', 'update_each_epoch': 100, 'seed': 1, 'wandb': True, 'best_response': False, 'entropy_coef': 0.025, 'bc': False, 'heterogeneous_house_agent': False, 'heter_house_alg': 'real', 'heter_house_rate': 100, 'find_best_response': False}}, '_flags_cache': {'struct': None, 'readonly': None, 'convert': None, 'allow_objects': None}, '_content': {'n_households': 1000, 'log_std_min': -20, 'log_std_max': 2, 'hidden_size': 128, 'cuda': True, 'q_lr': 0.0003, 'p_lr': 0.0003, 'buffer_size': 1000000.0, 'env_name': 'wealth_distribution', 'init_exploration_policy': 'gaussian', 'n_epochs': 1000, 'epoch_length': 300, 'update_cycles': 100, 'target_update_interval': 1, 'display_interval': 1, 'batch_size': 128, 'gamma': 0.975, 'tau': 0.005, 'eval_episodes': 10, 'init_exploration_steps': 1000, 'ppo_tau': 0.95, 'ppo_gamma': 0.99, 'eps': 1e-05, 'update_epoch': 20, 'clip': 0.1, 'vloss_coef': 0.5, 'ent_coef': 0.01, 'max_grad_norm': 0.5, 'update_freq': 2, 'initial_train': 100, 'noise_rate': 0.1, 'epsilon': 0.1, 'save_interval': 100, 'house_alg': 'mfrl', 'gov_alg': 'ddpg', 'update_each_epoch': 100, 'seed': 1, 'wandb': True, 'best_response': False, 'entropy_coef': 0.025, 'bc': False, 'heterogeneous_house_agent': False, 'heter_house_alg': 'real', 'heter_house_rate': 100, 'find_best_response': False}}
+2024-05-17 09:43:00,777 INFO    MainThread:8395 [wandb_init.py:init():548] starting backend
+2024-05-17 09:43:00,777 INFO    MainThread:8395 [backend.py:_multiprocessing_setup():97] multiprocessing start_methods=fork,spawn,forkserver, using: spawn
+2024-05-17 09:43:00,805 INFO    MainThread:8395 [backend.py:ensure_launched():217] starting backend process...
+2024-05-17 09:43:00,818 INFO    MainThread:8395 [backend.py:ensure_launched():222] started backend process with pid: 8447
+2024-05-17 09:43:00,819 INFO    MainThread:8395 [wandb_init.py:init():558] backend started and connected
+2024-05-17 09:43:00,826 INFO    MainThread:8395 [wandb_init.py:init():634] updated telemetry
+2024-05-17 09:43:00,827 INFO    MainThread:8395 [wandb_init.py:init():665] communicating run to backend with 30 second timeout
+2024-05-17 09:43:01,586 INFO    MainThread:8395 [wandb_run.py:_on_init():1919] communicating current version
+2024-05-17 09:43:03,098 INFO    MainThread:8395 [wandb_run.py:_on_init():1923] got version response upgrade_message: "wandb version 0.17.0 is available!  To upgrade, please run:\n $ pip install wandb --upgrade"
+
+2024-05-17 09:43:03,098 INFO    MainThread:8395 [wandb_init.py:init():700] starting run threads in backend
+2024-05-17 09:43:04,674 INFO    MainThread:8395 [wandb_run.py:_console_start():1893] atexit reg
+2024-05-17 09:43:04,675 INFO    MainThread:8395 [wandb_run.py:_redirect():1766] redirect: SettingsConsole.REDIRECT
+2024-05-17 09:43:04,676 INFO    MainThread:8395 [wandb_run.py:_redirect():1771] Redirecting console.
+2024-05-17 09:43:04,680 INFO    MainThread:8395 [wandb_run.py:_redirect():1827] Redirects installed.
+2024-05-17 09:43:04,680 INFO    MainThread:8395 [wandb_init.py:init():732] run started, returning control to user process
+2024-05-17 16:00:34,909 INFO    MainThread:8395 [wandb_run.py:_finish():1680] finishing run ai_tax/MACRO/3qv8ua0c
+2024-05-17 16:00:34,909 INFO    MainThread:8395 [wandb_run.py:_atexit_cleanup():1862] got exitcode: 0
+2024-05-17 16:00:34,910 INFO    MainThread:8395 [wandb_run.py:_restore():1834] restore
+2024-05-17 16:00:37,282 INFO    MainThread:8395 [wandb_run.py:_on_finish():1991] got exit ret: file_counts {
+  wandb_count: 1
+  other_count: 1
+}
+pusher_stats {
+  uploaded_bytes: 6816
+  total_bytes: 6816
+}
+
+2024-05-17 16:00:37,726 INFO    MainThread:8395 [wandb_run.py:_on_finish():1991] got exit ret: file_counts {
+  wandb_count: 1
+  other_count: 1
+}
+pusher_stats {
+  uploaded_bytes: 6816
+  total_bytes: 6816
+}
+
+2024-05-17 16:00:38,651 INFO    MainThread:8395 [wandb_run.py:_on_finish():1991] got exit ret: file_counts {
+  wandb_count: 6
+  other_count: 1
+}
+pusher_stats {
+  uploaded_bytes: 6816
+  total_bytes: 217316
+}
+
+2024-05-17 16:00:38,753 INFO    MainThread:8395 [wandb_run.py:_on_finish():1991] got exit ret: file_counts {
+  wandb_count: 6
+  other_count: 1
+}
+pusher_stats {
+  uploaded_bytes: 6816
+  total_bytes: 217316
+}
+
+2024-05-17 16:00:38,855 INFO    MainThread:8395 [wandb_run.py:_on_finish():1991] got exit ret: file_counts {
+  wandb_count: 6
+  other_count: 1
+}
+pusher_stats {
+  uploaded_bytes: 6816
+  total_bytes: 217316
+}
+
+2024-05-17 16:00:38,958 INFO    MainThread:8395 [wandb_run.py:_on_finish():1991] got exit ret: file_counts {
+  wandb_count: 6
+  other_count: 1
+}
+pusher_stats {
+  uploaded_bytes: 6816
+  total_bytes: 217316
+}
+
+2024-05-17 16:00:39,061 INFO    MainThread:8395 [wandb_run.py:_on_finish():1991] got exit ret: file_counts {
+  wandb_count: 6
+  other_count: 1
+}
+pusher_stats {
+  uploaded_bytes: 6816
+  total_bytes: 217316
+}
+
+2024-05-17 16:00:39,163 INFO    MainThread:8395 [wandb_run.py:_on_finish():1991] got exit ret: file_counts {
+  wandb_count: 6
+  other_count: 1
+}
+pusher_stats {
+  uploaded_bytes: 6816
+  total_bytes: 217316
+}
+
+2024-05-17 16:00:39,265 INFO    MainThread:8395 [wandb_run.py:_on_finish():1991] got exit ret: file_counts {
+  wandb_count: 6
+  other_count: 1
+}
+pusher_stats {
+  uploaded_bytes: 97982
+  total_bytes: 217316
+}
+
+2024-05-17 16:00:39,367 INFO    MainThread:8395 [wandb_run.py:_on_finish():1991] got exit ret: file_counts {
+  wandb_count: 6
+  other_count: 1
+}
+pusher_stats {
+  uploaded_bytes: 196286
+  total_bytes: 217316
+}
+
+2024-05-17 16:00:39,469 INFO    MainThread:8395 [wandb_run.py:_on_finish():1991] got exit ret: file_counts {
+  wandb_count: 6
+  other_count: 1
+}
+pusher_stats {
+  uploaded_bytes: 217316
+  total_bytes: 217316
+}
+
+2024-05-17 16:00:39,572 INFO    MainThread:8395 [wandb_run.py:_on_finish():1991] got exit ret: file_counts {
+  wandb_count: 6
+  other_count: 1
+}
+pusher_stats {
+  uploaded_bytes: 217316
+  total_bytes: 217316
+}
+
+2024-05-17 16:00:39,674 INFO    MainThread:8395 [wandb_run.py:_on_finish():1991] got exit ret: file_counts {
+  wandb_count: 6
+  other_count: 1
+}
+pusher_stats {
+  uploaded_bytes: 217316
+  total_bytes: 217316
+}
+
+2024-05-17 16:00:39,776 INFO    MainThread:8395 [wandb_run.py:_on_finish():1991] got exit ret: file_counts {
+  wandb_count: 6
+  other_count: 1
+}
+pusher_stats {
+  uploaded_bytes: 217316
+  total_bytes: 217316
+}
+
+2024-05-17 16:00:39,878 INFO    MainThread:8395 [wandb_run.py:_on_finish():1991] got exit ret: file_counts {
+  wandb_count: 6
+  other_count: 1
+}
+pusher_stats {
+  uploaded_bytes: 217316
+  total_bytes: 217316
+}
+
+2024-05-17 16:00:39,980 INFO    MainThread:8395 [wandb_run.py:_on_finish():1991] got exit ret: file_counts {
+  wandb_count: 6
+  other_count: 1
+}
+pusher_stats {
+  uploaded_bytes: 217316
+  total_bytes: 217316
+}
+
+2024-05-17 16:00:40,082 INFO    MainThread:8395 [wandb_run.py:_on_finish():1991] got exit ret: file_counts {
+  wandb_count: 6
+  other_count: 1
+}
+pusher_stats {
+  uploaded_bytes: 217316
+  total_bytes: 217316
+}
+
+2024-05-17 16:00:40,184 INFO    MainThread:8395 [wandb_run.py:_on_finish():1991] got exit ret: file_counts {
+  wandb_count: 6
+  other_count: 1
+}
+pusher_stats {
+  uploaded_bytes: 217316
+  total_bytes: 217316
+}
+
+2024-05-17 16:00:40,286 INFO    MainThread:8395 [wandb_run.py:_on_finish():1991] got exit ret: file_counts {
+  wandb_count: 6
+  other_count: 1
+}
+pusher_stats {
+  uploaded_bytes: 217316
+  total_bytes: 217316
+}
+
+2024-05-17 16:00:41,092 INFO    MainThread:8395 [wandb_run.py:_on_finish():1991] got exit ret: file_counts {
+  wandb_count: 6
+  other_count: 1
+}
+pusher_stats {
+  uploaded_bytes: 217316
+  total_bytes: 217316
+}
+
+2024-05-17 16:00:41,870 INFO    MainThread:8395 [wandb_run.py:_on_finish():1991] got exit ret: done: true
+exit_result {
+}
+file_counts {
+  wandb_count: 6
+  other_count: 1
+}
+pusher_stats {
+  uploaded_bytes: 217316
+  total_bytes: 217316
+}
+local_info {
+}
+
+2024-05-17 16:00:42,983 INFO    MainThread:8395 [wandb_run.py:_footer_history_summary_info():3099] rendering history
+2024-05-17 16:00:42,985 INFO    MainThread:8395 [wandb_run.py:_footer_history_summary_info():3131] rendering summary
+2024-05-17 16:00:42,989 INFO    MainThread:8395 [wandb_run.py:_footer_sync_info():3055] logging synced files

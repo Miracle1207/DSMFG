@@ -31,7 +31,7 @@ class maddpg_agent:
         self.target_critic = copy.copy(self.critic)
         if agent_name == "household":
             if self.args.bc == True:
-                self.actor.load_state_dict(torch.load("agents/real_data/2024_01_04_21_21_maddpg_trained_model.pth"))
+                self.actor.load_state_dict(torch.load("agents/real_data/2024_01_04_21_21_maddpg_trained_model.pth", weights_only=True))
                 self.actor_optimizer = torch.optim.Adam(self.actor.parameters(), lr=5e-6)
             else:
                 self.actor_optimizer = torch.optim.Adam(self.actor.parameters(), lr=self.args.p_lr)
@@ -167,7 +167,7 @@ class maddpg_agent:
         torch.save(self.actor.state_dict(), str(dir_path) + '/'+self.agent_name+ '_ddpg_net.pt')
         
     def load(self, dir_path):
-        self.actor.load_state_dict(torch.load(dir_path))
+        self.actor.load_state_dict(torch.load(dir_path, map_location=torch.device(self.device), weights_only=True))
 
     def get_epsilon(self, start=0.1, end=0.05, decay=1e5):
         self.current_step += 1

@@ -53,7 +53,7 @@ class mfrl_agent():
         sync_networks(self.mf_actor)
         sync_networks(self.mf_critic)
         if self.args.bc == True:
-            self.mf_actor.load_state_dict(torch.load("agents/real_data/2024_01_04_16_56_mfrl_trained_model.pth"))
+            self.mf_actor.load_state_dict(torch.load("agents/real_data/2024_01_04_16_56_mfrl_trained_model.pth", weights_only=True))
             self.mf_actor_optimizer = optim.Adam(self.mf_actor.parameters(), 1e-6, eps=self.args.eps)
         else:
             self.mf_actor_optimizer = optim.Adam(self.mf_actor.parameters(), self.args.p_lr, eps=self.args.eps)
@@ -69,7 +69,10 @@ class mfrl_agent():
 
         self.actor_scheduler = LambdaLR(self.mf_actor_optimizer, lr_lambda=lambda_function)
         self.critic_scheduler = LambdaLR(self.mf_critic_optimizer, lr_lambda=lambda_function)
-        
+        if self.args.cuda:
+            self.device = "cuda"
+        else:
+            self.device = "cpu"
         if self.args.cuda:
             self.mf_actor.cuda()
             self.mf_critic.cuda()
@@ -145,7 +148,7 @@ class mfrl_agent():
         torch.save(self.mf_actor.state_dict(), str(dir_path) + '/house_actor.pt')
     
     def load(self, dir_path):
-        self.mf_actor.load_state_dict(torch.load(dir_path))
+        self.mf_actor.load_state_dict(torch.load(dir_path, map_location=torch.device(self.device), weights_only=True))
     # def load(self, dir_path, step=0):
     #     file_path = os.path.join(dir_path, "mfac_{}".format(step))
     #     model_vars = torch.load(file_path)

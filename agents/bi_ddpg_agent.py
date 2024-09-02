@@ -110,6 +110,6 @@ class bi_ddpg_agent:
         torch.save(self.actor.state_dict(), str(dir_path) + '/bi_ddpg_net.pt')
     
     def load(self, dir_path):
-        self.actor.load_state_dict(torch.load(dir_path))
+        self.actor.load_state_dict(torch.load(dir_path, map_location=torch.device(self.device), weights_only=True))
 
 

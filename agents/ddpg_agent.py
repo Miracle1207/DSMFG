@@ -30,7 +30,7 @@ class ddpg_agent:
         
         if agent_name == "household":
             if self.args.bc == True:
-                self.actor.load_state_dict(torch.load("agents/real_data/2024_01_04_21_21_maddpg_trained_model.pth"))
+                self.actor.load_state_dict(torch.load("agents/real_data/2024_01_04_21_21_maddpg_trained_model.pth", weights_only=True))
                 self.actor_optimizer = torch.optim.Adam(self.actor.parameters(), lr=1e-6)
             else:
                 self.actor_optimizer = torch.optim.Adam(self.actor.parameters(), lr=self.args.p_lr)
@@ -118,10 +118,9 @@ class ddpg_agent:
         elif self.agent_name == "household":
             return action
         
-    #
-
+    
     def save(self, dir_path):
         torch.save(self.actor.state_dict(), str(dir_path) +'/'+ self.agent_name + '_ddpg_net.pt')
     def load(self, dir_path):
-        self.actor.load_state_dict(torch.load(dir_path))
+        self.actor.load_state_dict(torch.load(dir_path, map_location=torch.device(self.device), weights_only=True))
 
