@@ -1,4 +1,4 @@
-# Learning Macroeconomic Policies based on Microfoundations: A Stackelberg Mean Field Game Approach
+# Learning Macroeconomic Policies based on Microfoundations: A Dynamic Stackelberg Mean Field Game Approach
 
 <div style="text-align:center">
   <img src="img/smfg.png" alt="示例图片" >
